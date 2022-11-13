@@ -7,3 +7,10 @@ apt install nodejs
 apt install nmp
 
 npm install --save mastodon-api
+
+echo "***IMPORTANT*** you must now create tokens.json with credentials in format"
+echo "{"
+echo '  "client_key": ...,'
+echo '  "client_secret": ...,'
+echo '  "access_token": ...'
+echo "}"  
