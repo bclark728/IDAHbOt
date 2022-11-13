@@ -1,3 +1,6 @@
 #!/bin/bash
 
-echo "test"
+echo "installing utilities"
+
+apt update
+apt install nodejs
