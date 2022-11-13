@@ -7,6 +7,7 @@ apt install nodejs
 apt install nmp
 
 npm install --save mastodon-api
+npm instaall rss-parser
 
 echo "***IMPORTANT*** you must now create tokens.json with credentials in format"
 echo "{"
