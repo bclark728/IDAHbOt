@@ -15,10 +15,10 @@ const M = new Mastodon({
   api_url: 'https://botsin.space/api/v1/'
 });
 
-function toot(message) {
+function toot(message, spoiler='bot jibberish') {
 	const params = {
 		status: message,
-		spoiler_text: 'Bot jibberish',
+		spoiler_text: spoiler,
 		visibility: 'private'
 	};
 	M.post('statuses', params, (error, data) => {
@@ -31,6 +31,8 @@ function toot(message) {
 	});
 }
 
+/*
+// Listener
 console.log("Starting listener...");
 const listener = M.stream('streaming/user')
 listener.on('message', msg => {
@@ -40,18 +42,38 @@ listener.on('message', msg => {
 listener.on('error', err => console.log(err));
 console.log("(listening)");
 
+// Console input
 console.log("\n\n\n-----Starting manual input-----");
 const readline = require('readline');
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
 });
-
 rl.question('>', function (command) {
 	toot(command);
 });
-
 rl.on('close', function () {
   console.log('\nBYE BYE !!!');
   process.exit(0);
 });
+*/
+
+console.log("Starting RSS reader...");
+const RSSParser = require("rss-parser");
+const feeds = {
+	"Idaho Statesman":"https://feeds.mcclatchy.com/idahostatesman/stories",
+	"Idaho Reports":"https://blog.idahoreports.idahoptv.org/feed/"
+}
+const parse = async url => {
+    const feed = await new RSSParser().parseURL(url);
+    console.log(feed.title);
+    //toot(`${feed.items[0].title}\n${feed.items[0].link}`, "Idaho Statesman");
+    feed.items.forEach(item => {
+        console.log(`${item.title} - ${item.link}\n`);
+    });
+};
+for(let k in feeds) {
+	console.log(k, feeds[k]);
+	parse(feeds[k]);
+}
+//parse(feedUrl);
