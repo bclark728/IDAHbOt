@@ -5,7 +5,6 @@ let rawdata = fs.readFileSync(file_name);
 let tokens = JSON.parse(rawdata);
 console.log ("(success)");
 
-console.log("Starting IDAHbOt...");
 const Mastodon = require('mastodon-api');
 const M = new Mastodon({
   client_key: tokens.client_key,
@@ -58,35 +57,52 @@ rl.on('close', function () {
 });
 */
 
-console.log("Starting RSS reader...");
 const RSSParser = require("rss-parser");
-function NewsFeed(name, url, last_update=0) {
-	this.name = name;
-	this.url = url;
-}
 const parse = async (feed, lookback) => {
 	const parsed = await new RSSParser().parseURL(feed.url);
-	//toot(`${feed.items[0].title}\n${feed.items[0].link}`, "Idaho Statesman");
 	parsed.items.forEach(item => {
 		if(new Date(item.isoDate) > new Date(lookback)) {
-			console.log(`TOOT: ${item.title} ${item.link}${feed.name}`);
-			toot(`${item.title}\n${item.link}`, `Idaho News(${feed.name})`);
+			let excluded = false;
+			for(k in feed.urlExcludes) {
+				if(feed.urlExcludes[k].test(item.link)){
+					excluded = true;
+				}
+			}
+			for(k in feed.titleExcludes) {
+				if(feed.titleExcludes[k].test(item.title)){
+					excluded = true;
+				}
+			}
+			if(!excluded) {
+				console.log(`TOOT: ${item.link}\n`);
+				toot(`${item.title}\n${item.link}`, `Idaho News(${feed.name})`);
+			}
+			else {
+				//console.log(`EXCLUDED: ${item.link}\n`);
+			}
 		}
 		else {
 			//console.log(`rejected: ${item.title} date: ${item.isoDate}`);
-			//console.log(`rejected: ${item.isoDate}`);
 		}
 	});
 };
 
-const feeds = [new NewsFeed("Idaho Statesman", "https://feeds.mcclatchy.com/idahostatesman/stories"),
-               new NewsFeed("Idaho Reports", "https://blog.idahoreports.idahoptv.org/feed/")];
+function NewsFeed(name, url, urlExcludes=[], titleExcludes=[]) {
+	this.name = name;
+	this.url = url;
+	this.urlExcludes = urlExcludes;
+	this.titleExcludes = titleExcludes;
+}
+const feeds = [new NewsFeed("Idaho Statesman", "https://feeds.mcclatchy.com/idahostatesman/stories", [new RegExp('/nation-world/')],[]),
+               new NewsFeed("Idaho Reports", "https://blog.idahoreports.idahoptv.org/feed/", [], [])];
 
 const schedule = require('node-schedule');
 const delay_time = 1000*60*15; // 15 minute refresh cycle
-console.log("Starting scheduler");
+//const delay_time = 1000*60*15000; // for muted testing
+console.log("Starting rss monitor");
 var rule = new schedule.RecurrenceRule();
-rule.minute = new schedule.Range(0, 59, 15);
+rule.minute = new schedule.Range(0, 59, 15); // 15 minute refresh cycle
+//rule.minute = new schedule.Range(0, 59, 1); // for muted testing
 const job = schedule.scheduleJob(rule, function(){
 	console.log(`Updating rss feeds (${new Date()})`);
 	const lookback = new Date() - delay_time;
