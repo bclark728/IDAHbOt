@@ -68,9 +68,9 @@ const parse = async (feed, lookback) => {
 	const parsed = await new RSSParser().parseURL(feed.url);
 	//toot(`${feed.items[0].title}\n${feed.items[0].link}`, "Idaho Statesman");
 	parsed.items.forEach(item => {
-		//console.log(`${item.link} }Date: ${new Date(item.isoDate)} Lookback: ${new Date(lookback)} Newer: ${new Date(item.isoDate) > new Date(lookback)}}`);
 		if(new Date(item.isoDate) > new Date(lookback)) {
-			console.log(`TOOT: ${item.title} ${item.link} SPOILER: ${feed.name}`);
+			console.log(`TOOT: ${item.title} ${item.link}${feed.name}`);
+			toot(`${item.title}\n${item.link}`, `Idaho News(${feed.name})`);
 		}
 		else {
 			//console.log(`rejected: ${item.title} date: ${item.isoDate}`);
