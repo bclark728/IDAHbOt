@@ -94,8 +94,11 @@ function NewsFeed(name, url, urlExcludes=[], titleExcludes=[]) {
 	this.titleExcludes = titleExcludes;
 }
 const feeds = [new NewsFeed("Idaho Statesman", "https://feeds.mcclatchy.com/idahostatesman/stories", [new RegExp('/nation-world/')],[]),
+               //new NewsFeed("Idaho Statesman", "https://feeds.mcclatchy.com/idahostatesman/sections/news/local/stories", [],[]),
                new NewsFeed("Idaho Reports", "https://blog.idahoreports.idahoptv.org/feed/", [], []),
-               new NewsFeed("Idaho Press", "https://www.idahopress.com/search/?f=rss&t=article&c=news/local&l=50&s=start_time&sd=desc", [], [])];
+               new NewsFeed("Idaho Press", "https://www.idahopress.com/search/?f=rss&t=article&c=news/local&l=50&s=start_time&sd=desc", [], []),
+	       new NewsFeed("KTVB", "https://www.ktvb.com/feeds/syndication/rss/news/local", [], [])
+              ];
 
 const schedule = require('node-schedule');
 const delay_time = 1000*60*15; // 15 minute refresh cycle
