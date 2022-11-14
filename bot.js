@@ -60,20 +60,37 @@ rl.on('close', function () {
 
 console.log("Starting RSS reader...");
 const RSSParser = require("rss-parser");
-const feeds = {
-	"Idaho Statesman":"https://feeds.mcclatchy.com/idahostatesman/stories",
-	"Idaho Reports":"https://blog.idahoreports.idahoptv.org/feed/"
+function NewsFeed(name, url, last_update=0) {
+	this.name = name;
+	this.url = url;
 }
-const parse = async url => {
-    const feed = await new RSSParser().parseURL(url);
-    console.log(feed.title);
-    //toot(`${feed.items[0].title}\n${feed.items[0].link}`, "Idaho Statesman");
-    feed.items.forEach(item => {
-        console.log(`${item.title} - ${item.link}\n`);
-    });
+const parse = async (feed, lookback) => {
+	const parsed = await new RSSParser().parseURL(feed.url);
+	//toot(`${feed.items[0].title}\n${feed.items[0].link}`, "Idaho Statesman");
+	parsed.items.forEach(item => {
+		//console.log(`${item.link} }Date: ${new Date(item.isoDate)} Lookback: ${new Date(lookback)} Newer: ${new Date(item.isoDate) > new Date(lookback)}}`);
+		if(new Date(item.isoDate) > new Date(lookback)) {
+			console.log(`TOOT: ${item.title} ${item.link} SPOILER: ${feed.name}`);
+		}
+		else {
+			//console.log(`rejected: ${item.title} date: ${item.isoDate}`);
+			//console.log(`rejected: ${item.isoDate}`);
+		}
+	});
 };
-for(let k in feeds) {
-	console.log(k, feeds[k]);
-	parse(feeds[k]);
-}
-//parse(feedUrl);
+
+const feeds = [new NewsFeed("Idaho Statesman", "https://feeds.mcclatchy.com/idahostatesman/stories"),
+               new NewsFeed("Idaho Reports", "https://blog.idahoreports.idahoptv.org/feed/")];
+
+const schedule = require('node-schedule');
+const delay_time = 1000*60*15; // 15 minute refresh cycle
+console.log("Starting scheduler");
+var rule = new schedule.RecurrenceRule();
+rule.minute = new schedule.Range(0, 59, 15);
+const job = schedule.scheduleJob(rule, function(){
+	console.log(`Updating rss feeds (${new Date()})`);
+	const lookback = new Date() - delay_time;
+	for(k in feeds) {
+		parse(feeds[k], lookback);
+	}
+});
