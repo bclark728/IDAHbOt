@@ -1,3 +1,12 @@
+if(process.argv[2] == "-sim") {
+	console.log("***SIMULATED***");
+	const SIM = true;
+}
+else {
+	const SIM = false;
+}
+
+
 console.log("Loading tokens...");
 const fs = require('fs');
 const file_name = "tokens.json";
@@ -15,6 +24,9 @@ const M = new Mastodon({
 });
 
 function toot(message, spoiler='bot jibberish') {
+	if(SIM) {
+		return;
+	}
 	const params = {
 		status: message,
 		spoiler_text: spoiler,
@@ -57,6 +69,9 @@ rl.on('close', function () {
 });
 */
 
+const botFilter = "_IDAHbOt";
+const newsFilter = botFilter + "_news";
+
 const RSSParser = require("rss-parser");
 const parse = async (feed, lookback) => {
 	const parsed = await new RSSParser().parseURL(feed.url);
@@ -75,7 +90,7 @@ const parse = async (feed, lookback) => {
 			}
 			if(!excluded) {
 				console.log(`TOOT: ${item.link}\n`);
-				toot(`${item.title}\n${item.link}`, `Idaho News(${feed.name})`);
+				toot(`${item.title}\n${item.link}\n${newsFilter}`, `Idaho News(${feed.name})`);
 			}
 			else {
 				//console.log(`EXCLUDED: ${item.link}\n`);
@@ -93,16 +108,22 @@ function NewsFeed(name, url, urlExcludes=[], titleExcludes=[]) {
 	this.urlExcludes = urlExcludes;
 	this.titleExcludes = titleExcludes;
 }
-const feeds = [new NewsFeed("Idaho Statesman", "https://feeds.mcclatchy.com/idahostatesman/stories", [new RegExp('/nation-world/')],[]),
-               //new NewsFeed("Idaho Statesman", "https://feeds.mcclatchy.com/idahostatesman/sections/news/local/stories", [],[]),
+const feeds = [//new NewsFeed("Idaho Statesman", "https://feeds.mcclatchy.com/idahostatesman/stories", [new RegExp('/nation-world/')],[]),
+               new NewsFeed("Idaho Statesman", "https://feeds.mcclatchy.com/idahostatesman/sections/news/local/stories", [],[]),
+               new NewsFeed("Idaho Statesman", "https://feeds.mcclatchy.com/idahostatesman/sections/opinion/stories", [],[]),
+               new NewsFeed("Idaho Statesman", "https://feeds.mcclatchy.com/idahostatesman/sections/sports/stories", [],[]),
+               new NewsFeed("Idaho Statesman", "https://feeds.mcclatchy.com/idahostatesman/sections/outdoors/stories", [],[]),
                new NewsFeed("Idaho Reports", "https://blog.idahoreports.idahoptv.org/feed/", [], []),
                new NewsFeed("Idaho Press", "https://www.idahopress.com/search/?f=rss&t=article&c=news/local&l=50&s=start_time&sd=desc", [], []),
 	       new NewsFeed("KTVB", "https://www.ktvb.com/feeds/syndication/rss/news/local", [], []),
 	       new NewsFeed("Boise State Public Radio", "https://www.boisestatepublicradio.org/news.rss", [], []),
 	       new NewsFeed("Post Register", "http://www.postregister.com/search/?f=rss&t=article&c=news/local&l=50&s=start_time&sd=desc", [], []),
 	       new NewsFeed("Lewiston Tribune", "http://lmtribune.com/search/?f=rss&t=article&c=northwest&l=50&s=start_time&sd=desc", [], []),
-	       new NewsFeed("Times-News", "http://magicvalley.com/search/?f=rss&t=article&c=news/local&l=50&s=start_time&sd=desc", [], []) 
-              ];
+	       new NewsFeed("Lewiston Tribune", "http://lmtribune.com/search/?f=rss&t=article&c=opinion&l=50&s=start_time&sd=desc", [], []),
+	       new NewsFeed("Lewiston Tribune", "http://lmtribune.com/search/?f=rss&t=article&c=outdoors&l=50&s=start_time&sd=desc", [], []),
+	       new NewsFeed("Times-News", "http://magicvalley.com/search/?f=rss&t=article&c=news/local&l=50&s=start_time&sd=desc", [], []),
+	       new NewsFeed("Capital Sun", "https://idahocapitalsun.com/feed/", [], [])
+              ]; // TODO: Ed News, CDA Press, Bonner bee, east idaho news
 
 const schedule = require('node-schedule');
 const delay_time = 1000*60*15; // 15 minute refresh cycle
