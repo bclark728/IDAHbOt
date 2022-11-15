@@ -9,6 +9,7 @@ apt install nmp
 npm install --save mastodon-api
 npm install --save rss-parser
 npm install --save node-schedule
+npm install --save twitter-api-v2
 
 echo "***IMPORTANT*** you must now create tokens.json with credentials in format"
 echo "{"
