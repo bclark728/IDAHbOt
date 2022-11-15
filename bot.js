@@ -1,11 +1,6 @@
 if(process.argv[2] == "-sim") {
 	console.log("***SIMULATED***");
-	const SIM = true;
 }
-else {
-	const SIM = false;
-}
-
 
 console.log("Loading tokens...");
 const fs = require('fs');
@@ -24,7 +19,8 @@ const M = new Mastodon({
 });
 
 function toot(message, spoiler='bot jibberish') {
-	if(SIM) {
+	if(process.argv[2] == "-sim") {
+		console.log("(sim)");
 		return;
 	}
 	const params = {
