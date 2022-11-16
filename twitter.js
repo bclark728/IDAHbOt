@@ -25,28 +25,30 @@ function findHandle(id, users) {
 	return "<ERROR>";
 }
 
-async function extractTweets(searchString, maxResults=10, excludeRTs=true) {
-	let tweets = await client.v2.search(searchString, { expansions: ['author_id'], 'user.fields': ['username', 'url']});
+async function extractTweets(callback, searchString, maxResults=10, timeCutoff=0, excludeRTs=true) {
+	//let tweets = await client.v2.search(searchString, { expansions: ['author_id'], 'user.fields': ['username', 'url'], 'tweet.fields': ['created_at']});
+	const paginator = await client.v2.search(searchString, { expansions: ['author_id'], 'user.fields': ['username', 'url'], 'tweet.fields': ['created_at']});
 	let results = 0;
 	RESLOOP:
-	while(results < maxResults) {
-		//console.log(tweets.includes.result);
-		for(k in tweets.includes.result.data) {
-			//console.log(tweets.includes.result.data[k]);
-			if(!(excludeRTs & RegExp("^RT.*").test(tweets.includes.result.data[k].text))) {
-				console.log(`${findScreenName(tweets.includes.result.data[k].author_id, tweets.includes.users)} `+
-				            `(@${findHandle(tweets.includes.result.data[k].author_id, tweets.includes.users)}@twitter.com)\n`+
-				            `${tweets.includes.result.data[k].text}\n`+
-					    `🐦🔗 https://twitter.com/${findHandle(tweets.includes.result.data[k].author_id, tweets.includes.users)}/status/${tweets.includes.result.data[k].id}`);
-				console.log("\n\n");
-				results++;
-				if(results >= maxResults){
-					break RESLOOP;
-				}
-			}
+	//while(results < maxResults) {
+	for await(const tweet of paginator) {
+		if(new Date(tweet.created_at) < timeCutoff) {
+			break RESLOOP;
 		}
-		tweets = await tweets.fetchNext();
+		if(!(excludeRTs & RegExp("^RT.*").test(tweet.text))) {
+				callback(`${findScreenName(tweet.author_id, paginator.includes.users)} `+
+				         `(@${findHandle(tweet.author_id, paginator.includes.users)}@twitter.com)\n`+
+				         `${tweet.text}\n`+
+				         `🐦🔗 https://twitter.com/${findHandle(tweet.author_id, paginator.includes.users)}/status/${tweet.id}`);
+		}
+		else {
+		}
+		results++;
+		if(results >= maxResults){
+			break RESLOOP;
+		}
 	}
 }
 
-extractTweets("#idpol", 10);
+//extractTweets(console.error, "#idpol", 50, new Date() - 1000*60*15);
+module.exports = extractTweets;
