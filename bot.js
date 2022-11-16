@@ -121,6 +121,15 @@ const feeds = [//new NewsFeed("Idaho Statesman", "https://feeds.mcclatchy.com/id
 	       new NewsFeed("Capital Sun", "https://idahocapitalsun.com/feed/", [], [])
               ]; // TODO: Ed News, CDA Press, Bonner bee, east idaho news
 
+const extractor = require('./twitter.js');
+function tootWrapper (text) {
+	console.log("TOOT: " + text);
+	toot(text, "#idleg");
+}
+const twitterSearches = ["#idleg", "idpol"];
+
+//extractor(tootWrapper, "#idpol", 1, new Date() - 1000*60*15);
+
 const schedule = require('node-schedule');
 const delay_time = 1000*60*15; // 15 minute refresh cycle
 //const delay_time = 1000*60*15000; // for muted testing
@@ -128,10 +137,19 @@ console.log("Starting rss monitor");
 var rule = new schedule.RecurrenceRule();
 rule.minute = new schedule.Range(0, 59, 15); // 15 minute refresh cycle
 //rule.minute = new schedule.Range(0, 59, 1); // for muted testing
-const job = schedule.scheduleJob(rule, function(){
+const rssJob = schedule.scheduleJob(rule, function(){
 	console.log(`Updating rss feeds (${new Date()})`);
 	const lookback = new Date() - delay_time;
 	for(k in feeds) {
 		parse(feeds[k], lookback);
 	}
+});
+const twitterJob = schedule.scheduleJob(rule, function() {
+	console.log("Updating twitter feed");
+	const lookback = new Date() - delay_time;
+	for(srch of twitterSearches) {
+		console.log(` searching ${srch}`);
+		extractor(tootWrapper, srch, 50, lookback);
+	}
+
 });
