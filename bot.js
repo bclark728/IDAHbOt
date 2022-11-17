@@ -126,7 +126,7 @@ function tootWrapper (text) {
 	console.log("TOOT: " + text);
 	toot(text, "#idleg");
 }
-const twitterSearches = ["#idleg", "idpol"];
+const twitterSearches = ["#idleg", "#idpol"];
 
 //extractor(tootWrapper, "#idpol", 1, new Date() - 1000*60*15);
 
@@ -149,7 +149,10 @@ const twitterJob = schedule.scheduleJob(rule, function() {
 	const lookback = new Date() - delay_time;
 	for(srch of twitterSearches) {
 		console.log(` searching ${srch}`);
-		extractor(tootWrapper, srch, 50, lookback);
+		extractor((text) => {
+			console.log("TOOT: " + text);
+			toot(text, srch);
+		}, srch, 50, lookback);
 	}
 
 });
