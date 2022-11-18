@@ -20,7 +20,8 @@ const M = new Mastodon({
 
 function toot(message, spoiler='bot jibberish') {
 	if(process.argv[2] == "-sim") {
-		console.log("(sim)");
+		console.log(`[${spoiler}]\n`+
+			    `${message}\n`);
 		return;
 	}
 	const params = {
@@ -33,7 +34,8 @@ function toot(message, spoiler='bot jibberish') {
 			console.error(error);
 		}
 		else {
-			fs.appendFileSync("toots.log",(`Toot: ${data.id} - ${data.created_at}\n`));
+			fs.appendFileSync("toots.log",(
+				`Toot: ${data.id} - ${data.created_at}\n`));
 		}
 	});
 }
@@ -67,6 +69,7 @@ rl.on('close', function () {
 
 const botFilter = "_IDAHbOt";
 const newsFilter = botFilter + "_news";
+const twitterFilter = botFilter + "_twitter";
 
 const RSSParser = require("rss-parser");
 const parse = async (feed, lookback) => {
@@ -85,15 +88,8 @@ const parse = async (feed, lookback) => {
 				}
 			}
 			if(!excluded) {
-				console.log(`TOOT: ${item.link}\n`);
 				toot(`${item.title}\n${item.link}\n${newsFilter}`, `Idaho News(${feed.name})`);
 			}
-			else {
-				//console.log(`EXCLUDED: ${item.link}\n`);
-			}
-		}
-		else {
-			//console.log(`rejected: ${item.title} date: ${item.isoDate}`);
 		}
 	});
 };
@@ -104,8 +100,7 @@ function NewsFeed(name, url, urlExcludes=[], titleExcludes=[]) {
 	this.urlExcludes = urlExcludes;
 	this.titleExcludes = titleExcludes;
 }
-const feeds = [//new NewsFeed("Idaho Statesman", "https://feeds.mcclatchy.com/idahostatesman/stories", [new RegExp('/nation-world/')],[]),
-               new NewsFeed("Idaho Statesman", "https://feeds.mcclatchy.com/idahostatesman/sections/news/local/stories", [],[]),
+const feeds = [ new NewsFeed("Idaho Statesman", "https://feeds.mcclatchy.com/idahostatesman/sections/news/local/stories", [],[]),
                new NewsFeed("Idaho Statesman", "https://feeds.mcclatchy.com/idahostatesman/sections/opinion/stories", [],[]),
                new NewsFeed("Idaho Statesman", "https://feeds.mcclatchy.com/idahostatesman/sections/sports/stories", [],[]),
                new NewsFeed("Idaho Statesman", "https://feeds.mcclatchy.com/idahostatesman/sections/outdoors/stories", [],[]),
@@ -117,42 +112,36 @@ const feeds = [//new NewsFeed("Idaho Statesman", "https://feeds.mcclatchy.com/id
 	       new NewsFeed("Lewiston Tribune", "http://lmtribune.com/search/?f=rss&t=article&c=northwest&l=50&s=start_time&sd=desc", [], []),
 	       new NewsFeed("Lewiston Tribune", "http://lmtribune.com/search/?f=rss&t=article&c=opinion&l=50&s=start_time&sd=desc", [], []),
 	       new NewsFeed("Lewiston Tribune", "http://lmtribune.com/search/?f=rss&t=article&c=outdoors&l=50&s=start_time&sd=desc", [], []),
-	       new NewsFeed("Times-News", "http://magicvalley.com/search/?f=rss&t=article&c=news/local&l=50&s=start_time&sd=desc", [], []),
+	       //new NewsFeed("Times-News", "http://magicvalley.com/search/?f=rss&t=article&c=news/local&l=50&s=start_time&sd=desc", [], []),
 	       new NewsFeed("Capital Sun", "https://idahocapitalsun.com/feed/", [], [])
               ]; // TODO: Ed News, CDA Press, Bonner bee, east idaho news
 
-const extractor = require('./twitter.js');
-function tootWrapper (text) {
-	console.log("TOOT: " + text);
-	toot(text, "#idleg");
-}
-const twitterSearches = ["#idleg", "#idpol"];
-
-//extractor(tootWrapper, "#idpol", 1, new Date() - 1000*60*15);
-
 const schedule = require('node-schedule');
 const delay_time = 1000*60*15; // 15 minute refresh cycle
-//const delay_time = 1000*60*15000; // for muted testing
+//const delay_time = 1000*60*120; // for muted testing
 console.log("Starting rss monitor");
 var rule = new schedule.RecurrenceRule();
 rule.minute = new schedule.Range(0, 59, 15); // 15 minute refresh cycle
 //rule.minute = new schedule.Range(0, 59, 1); // for muted testing
 const rssJob = schedule.scheduleJob(rule, function(){
-	console.log(`Updating rss feeds (${new Date()})`);
+	console.log(`\n\n\nUpdating rss feeds (${new Date().toLocaleString("en-US", {timeZone: "America/Denver"})})`);
 	const lookback = new Date() - delay_time;
 	for(k in feeds) {
 		parse(feeds[k], lookback);
 	}
 });
+const extractor = require('./twitter.js');
+const twitterSearches = ['#idleg #idpol', '#idpol -#idleg', '#idleg -#idpol'];
+console.log("Starting twitter monitor");
 const twitterJob = schedule.scheduleJob(rule, function() {
 	console.log("Updating twitter feed");
-	const lookback = new Date() - delay_time;
+	const lookback = new Date() - (delay_time);
 	for(srch of twitterSearches) {
-		console.log(` searching ${srch}`);
-		extractor((text) => {
-			console.log("TOOT: " + text);
-			toot(text, srch);
-		}, srch, 50, lookback);
+		//console.log(` searching ${srch}`);
+		extractor((t, s) => {
+			toot(t + `\n ${twitterFilter}`, s);
+		}, srch, 100, lookback);
+		console.log(` finished searching ${srch}`);
 	}
 
 });

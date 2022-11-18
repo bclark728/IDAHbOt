@@ -30,30 +30,45 @@ function findHandle(id, users) {
 	return "<ERROR>";
 }
 
-async function extractTweets(callback, searchString, maxResults=10, timeCutoff=0, excludeRTs=true) {
-	//let tweets = await client.v2.search(searchString, { expansions: ['author_id'], 'user.fields': ['username', 'url'], 'tweet.fields': ['created_at']});
-	const paginator = await client.v2.search(searchString, { expansions: ['author_id'], 'user.fields': ['username', 'url'], 'tweet.fields': ['created_at']});
-	let results = 0;
-	RESLOOP:
-	//while(results < maxResults) {
-	for await(const tweet of paginator) {
-		if(new Date(tweet.created_at) < timeCutoff) {
-			break RESLOOP;
+const spammers = ['miracleguppy', 'Idpol2', '@IdpolLopdi'];
+function isSpammer(handle) {
+	for(test of spammers) {
+		if(handle==test) {
+			//console.log("blocked @" + handle);
+			return true;
 		}
-		if(!(excludeRTs & RegExp("^RT.*").test(tweet.text))) {
-				callback(`${findScreenName(tweet.author_id, paginator.includes.users)} `+
-				         `(@${findHandle(tweet.author_id, paginator.includes.users)}@twitter.com)\n`+
-				         `${tweet.text}\n`+
-				         `🐦🔗 https://twitter.com/${findHandle(tweet.author_id, paginator.includes.users)}/status/${tweet.id}`);
+	}
+	return false;
+}
+
+async function extractTweets(callback, searchString, maxResults=10, timeCutoff=0, excludeRTs=true) {
+	const paginator = await client.v2.search(searchString, { expansions: ['author_id'], 'user.fields': ['username', 'url'], 'tweet.fields': ['created_at']});
+	const pagsync = await paginator.fetchLast(maxResults);
+	let results = 0;
+	let ids=[];
+	for(tweet of pagsync) {
+		if(new Date(tweet.created_at) < timeCutoff) {
+			break;
+		}
+		if(!(excludeRTs & RegExp("^RT.*").test(tweet.text)) & //exclude retweets if flag set
+		   !(isSpammer(findHandle(tweet.author_id, paginator.includes.users)) & //exclude known list of spammers
+		   !(ids.includes(tweet.id)))) { //exclude duplicates
+			ids.push(tweet.id);
+			callback(`${findScreenName(tweet.author_id, paginator.includes.users)} `+
+				 `(@${findHandle(tweet.author_id, paginator.includes.users)}@twitter.com)\n`+
+				 `${tweet.text}\n`+
+				 `🐦🔗 https://twitter.com/${findHandle(tweet.author_id, paginator.includes.users)}/status/${tweet.id}`, searchString);
 		}
 		else {
+			if(ids.includes(tweet.id)) {
+				console.log("excluded duplicate" + tweet.id);
+			}
 		}
 		results++;
 		if(results >= maxResults){
-			break RESLOOP;
+			break;
 		}
 	}
 }
 
-//extractTweets(console.error, "#idpol", 50, new Date() - 1000*60*15);
 module.exports = extractTweets;
