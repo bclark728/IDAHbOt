@@ -2,12 +2,12 @@ if(process.argv[2] == "-sim") {
 	console.log("***SIMULATED***");
 }
 
-console.log("Loading tokens...");
+//console.log("Loading tokens...");
 const fs = require('fs');
 const file_name = "tokens.json";
 let rawdata = fs.readFileSync(file_name);
 let tokens = JSON.parse(rawdata);
-console.log ("(success)");
+//console.log ("(success)");
 
 const Mastodon = require('mastodon-api');
 const M = new Mastodon({
@@ -19,15 +19,14 @@ const M = new Mastodon({
 });
 
 function toot(message, spoiler='bot jibberish') {
-	const splr = spoiler.replace(/-#[^\s]*/g,'').replace(/\s\s/g,' '); //remove excluded hashtags from spoiler text
 	if(process.argv[2] == "-sim") {
-		console.log(`[${splr}]\n`+
+		console.log(`[${spoiler}]\n`+
 			    `${message}\n`);
 		return;
 	}
 	const params = {
 		status: message,
-		spoiler_text: splr,
+		spoiler_text: spoiler,
 		visibility: 'private'
 	};
 	M.post('statuses', params, (error, data) => {
@@ -35,7 +34,7 @@ function toot(message, spoiler='bot jibberish') {
 			console.error(error);
 		}
 		else {
-			console.log("Toot: " + splr);
+			console.log(`Toot: ${spoiler} (${new Date().toLocaleString("en-US", {timeZone: "America/Denver"})})`);
 			fs.appendFileSync("toots.log",(
 				`Toot: ${data.id} - ${data.created_at}\n`));
 		}
@@ -122,12 +121,12 @@ const feeds = [ new NewsFeed("Idaho Statesman", "https://feeds.mcclatchy.com/ida
 const schedule = require('node-schedule');
 const delay_time = 1000*60*15; // 15 minute refresh cycle
 //const delay_time = 1000*60*120; // for muted testing
-console.log("Starting rss monitor");
+//console.log("Starting rss monitor");
 var rule = new schedule.RecurrenceRule();
 rule.minute = new schedule.Range(0, 59, 15); // 15 minute refresh cycle
 //rule.minute = new schedule.Range(0, 59, 1); // for muted testing
 const rssJob = schedule.scheduleJob(rule, function(){
-	console.log(`\n\n\nUpdating rss feeds (${new Date().toLocaleString("en-US", {timeZone: "America/Denver"})})`);
+	//console.log(`\n\n\nUpdating rss feeds (${new Date().toLocaleString("en-US", {timeZone: "America/Denver"})})`);
 	const lookback = new Date() - delay_time;
 	for(k in feeds) {
 		parse(feeds[k], lookback);
@@ -135,16 +134,18 @@ const rssJob = schedule.scheduleJob(rule, function(){
 });
 const extractor = require('./twitter.js');
 const twitterSearches = ['#idleg #idpol', '#idpol -#idleg', '#idleg -#idpol'];
-console.log("Starting twitter monitor");
+//console.log("Starting twitter monitor");
 const twitterJob = schedule.scheduleJob(rule, function() {
-	console.log("Updating twitter feed");
+	//console.log("Updating twitter feed");
 	const lookback = new Date() - (delay_time);
 	for(srch of twitterSearches) {
 		//console.log(` searching ${srch}`);
 		extractor((t, s) => {
-			toot(t + `\n ${twitterFilter}`, s);
+	//const splr = spoiler.replace(/-#[^\s]*/g,'').replace(/\s\s/g,' '); //remove excluded hashtags from spoiler text
+			const handle = /(@.*)@twitter.com/.exec(t)[1];
+			toot(t + `\n ${twitterFilter}`, `${s.replace(/-#[^\s]*/g,'').replace(/\s\s/g,' ')}(${handle})`);
 		}, srch, 100, lookback);
-		console.log(` finished searching ${srch}`);
+		//console.log(` finished searching ${srch}`);
 	}
 
 });
