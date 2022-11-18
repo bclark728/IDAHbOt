@@ -19,14 +19,15 @@ const M = new Mastodon({
 });
 
 function toot(message, spoiler='bot jibberish') {
+	const splr = spoiler.replace(/-#[^\s]*/g,'').replace(/\s\s/g,' '); //remove excluded hashtags from spoiler text
 	if(process.argv[2] == "-sim") {
-		console.log(`[${spoiler}]\n`+
+		console.log(`[${splr}]\n`+
 			    `${message}\n`);
 		return;
 	}
 	const params = {
 		status: message,
-		spoiler_text: spoiler,
+		spoiler_text: splr,
 		visibility: 'private'
 	};
 	M.post('statuses', params, (error, data) => {
@@ -34,11 +35,13 @@ function toot(message, spoiler='bot jibberish') {
 			console.error(error);
 		}
 		else {
+			console.log("Toot: " + splr);
 			fs.appendFileSync("toots.log",(
 				`Toot: ${data.id} - ${data.created_at}\n`));
 		}
 	});
 }
+
 
 /*
 // Listener
