@@ -7,37 +7,6 @@ const newsFilter = botFilter + "_news";
 const twitterFilter = botFilter + "_twitter";
 
 const [parse, NewsFeed] = require('./rss.js');
-/*
-const RSSParser = require("rss-parser");
-const parse = async (feed, lookback) => {
-	const parsed = await new RSSParser().parseURL(feed.url);
-	parsed.items.forEach(item => {
-		if(new Date(item.isoDate) > new Date(lookback)) {
-			let excluded = false;
-			for(k in feed.urlExcludes) {
-				if(feed.urlExcludes[k].test(item.link)){
-					excluded = true;
-				}
-			}
-			for(k in feed.titleExcludes) {
-				if(feed.titleExcludes[k].test(item.title)){
-					excluded = true;
-				}
-			}
-			if(!excluded) {
-				toot(`${item.title}\n${item.link}\n${newsFilter}`, `Idaho News(${feed.name})`);
-			}
-		}
-	});
-};
-
-function NewsFeed(name, url, urlExcludes=[], titleExcludes=[]) {
-	this.name = name;
-	this.url = url;
-	this.urlExcludes = urlExcludes;
-	this.titleExcludes = titleExcludes;
-}
-*/
 const feeds = [ new NewsFeed("Idaho Statesman", "https://feeds.mcclatchy.com/idahostatesman/sections/news/local/stories", [],[]),
                new NewsFeed("Idaho Statesman", "https://feeds.mcclatchy.com/idahostatesman/sections/opinion/stories", [],[]),
                new NewsFeed("Idaho Statesman", "https://feeds.mcclatchy.com/idahostatesman/sections/sports/stories", [],[]),
@@ -60,16 +29,13 @@ const delay_time = 1000*60*15; // 15 minute refresh cycle
 var rule = new schedule.RecurrenceRule();
 rule.minute = new schedule.Range(0, 59, 15); // 15 minute refresh cycle
 //rule.minute = new schedule.Range(0, 59, 1); // for muted testing
-const rssJob = schedule.scheduleJob(rule, function(){
-	const lookback = new Date() - delay_time;
-	for(k in feeds) {
-		parse(feeds[k], lookback);
-	}
-});
 const extractor = require('./twitter.js');
 const twitterSearches = ['#idleg #idpol', '#idpol -#idleg', '#idleg -#idpol'];
 const twitterJob = schedule.scheduleJob(rule, function() {
 	const lookback = new Date() - (delay_time);
+	for(k in feeds) {
+		parse(feeds[k], lookback);
+	}
 	for(srch of twitterSearches) {
 		extractor((t, s) => {
 			const handle = /(@.*)@twitter.com/.exec(t)[1];
