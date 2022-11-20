@@ -30,7 +30,7 @@ function findHandle(id, users) {
 	return "<ERROR>";
 }
 
-const spammers = ['miracleguppy', 'Idpol2', '@IdpolLopdi'];
+const spammers = ['miracleguppy', 'Idpol2', 'IdpolLopdi', 'IdgpolV'];
 function isSpammer(handle) {
 	for(test of spammers) {
 		if(handle==test) {
