@@ -21,7 +21,7 @@ const M = new Mastodon({
 
 //main function to send toots
 function toot(message, spoiler) {
-        if(process.argv.includes("-sim")) {
+        if(process.argv.includes("-sim")) { //if -sim, don't toot. send message to console.log
                 console.log(`[${spoiler}]\n`+
                             `${message}\n`);
                 return;
@@ -29,14 +29,14 @@ function toot(message, spoiler) {
         const params = {
                 status: message,
                 spoiler_text: spoiler,
-                visibility: 'private'
+                visibility: 'private' //all bot messages currently private
         };
         M.post('statuses', params, (error, data) => { 
                 if(error) {
                         console.error(error);
                 }
                 else {
-                        console.log(`Toot: ${spoiler} (${new Date().toLocaleString("en-US", {timeZone: "America/Denver"})})`);
+                        console.log(`Toot: ${spoiler} (${new Date().toLocaleString("en-US", {timeZone: "America/Denver"})})`); //create log of toots
                         fs.appendFileSync("toots.log",(
                                 `Toot: ${data.id} - ${data.created_at}\n`));
                 }
@@ -45,7 +45,7 @@ function toot(message, spoiler) {
 
 module.exports = toot;
 
-/*
+/* save for possible future use
 // Listener
 console.log("Starting listener...");
 const listener = M.stream('streaming/user')

@@ -1,5 +1,10 @@
 #!/bin/bash
 
+##
+# setup.bash - initial configuration file. intended to run on ec2 ubuntu instance
+#	copright bryan clark (bryan.allan.clark@gmail.com) 2022
+##
+
 echo "installing utilities"
 
 apt update

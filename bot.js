@@ -14,14 +14,14 @@ if(process.argv.includes("-r")) {
 	r_rate = process.argv[process.argv.indexOf("-r")+1];
 }
 else {
-	r_rate = 15;
+	r_rate = 15; //default refresh rate = 15 minutes
 }
 console.log(`Refresh rate: every ${r_rate} minutes`);
 if(process.argv.includes("-l")) {
 	l_time = process.argv[process.argv.indexOf("-l")+1];
 }
 else {
-	l_time = r_rate;
+	l_time = r_rate; //lookback window defaults to refresh rate
 }
 console.log(`Lookback period: ${l_time} minutes`);
 

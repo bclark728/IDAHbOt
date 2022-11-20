@@ -18,9 +18,6 @@ const client = new TwitterApi({
         accessSecret: tokens.accessSecret
 });
 
-//list of spammers that are ignored
-const spammers = ['miracleguppy', 'Idpol2', 'IdpolLopdi', 'IdgpolV'];
-
 //utility functions for retreiving the user name and handle of a twitter id
 function findScreenName(id, users) {
 	for(let user of users) {
@@ -39,6 +36,8 @@ function findHandle(id, users) {
 	return "<ERROR>";
 }
 
+//list of spammers that are ignored
+const spammers = ['miracleguppy', 'Idpol2', 'IdpolLopdi', 'IdgpolV'];
 function isSpammer(handle) {
 	for(test of spammers) {
 		if(handle==test) {
@@ -58,7 +57,7 @@ async function extractTweets(callback, searchString, maxResults=10, timeCutoff=0
 	let results = 0;
 	let ids=[];
 	for(tweet of pagsync) {
-		if(new Date(tweet.created_at) < timeCutoff) {
+		if(new Date(tweet.created_at) < timeCutoff) { // exit once lookback window exceeded
 			break;
 		}
 		if(!(excludeRTs & RegExp("^RT.*").test(tweet.text)) & //exclude retweets if flag set
@@ -76,7 +75,7 @@ async function extractTweets(callback, searchString, maxResults=10, timeCutoff=0
 			}
 		}
 		results++;
-		if(results >= maxResults){
+		if(results >= maxResults){ // exit once maxResults exceeded
 			break;
 		}
 	}
