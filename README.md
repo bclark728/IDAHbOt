@@ -12,4 +12,6 @@ Tweets from #idpol and #idleg | \_IDAHbOt\_twitter
                        
 **Commandline arguments for daemon**
 
--sim:	simulate, do not actually send toots
+-sim:	          simulate, do not actually send toots
+-r <minutes>:     set refresh rate. defaults to 15 minutes
+-l <minutes>:     set lookback windown. defaults to refresh rate. *warning: if lookback window is smaller than refresh rate, this will result in duplucate toots. this option should only be used for testing with -sim*

@@ -13,7 +13,7 @@ const M = new Mastodon({
 });
 
 function toot(message, spoiler='bot jibberish') {
-        if(process.argv[2] == "-sim") {
+        if(process.argv.includes("-sim")) {
                 console.log(`[${spoiler}]\n`+
                             `${message}\n`);
                 return;

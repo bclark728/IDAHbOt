@@ -1,6 +1,24 @@
-if(process.argv[2] == "-sim") {
+if(process.argv.includes("-sim")) {
 	console.log("***SIMULATED***");
 }
+
+if(process.argv.includes("-r")) {
+	r_rate = process.argv[process.argv.indexOf("-r")+1];
+}
+else {
+	r_rate = 15;
+}
+console.log(`Refresh rate: every ${r_rate} minutes`);
+
+if(process.argv.includes("-l")) {
+	l_time = process.argv[process.argv.indexOf("-l")+1];
+}
+else {
+	l_time = r_rate;
+}
+console.log(`Lookback period: ${l_time} minutes`);
+
+
 const toot = require('./mastodon.js');
 const botFilter = "_IDAHbOt";
 const newsFilter = botFilter + "_news";
@@ -24,14 +42,15 @@ const feeds = [ new NewsFeed("Idaho Statesman", "https://feeds.mcclatchy.com/ida
               ]; // TODO: Ed News, CDA Press, Bonner bee, east idaho news
 
 const schedule = require('node-schedule');
-const delay_time = 1000*60*15; // 15 minute refresh cycle
+const delay_time = 1000*60*l_time; // 15 minute refresh cycle
 //const delay_time = 1000*60*120; // for muted testing
 var rule = new schedule.RecurrenceRule();
-rule.minute = new schedule.Range(0, 59, 15); // 15 minute refresh cycle
-//rule.minute = new schedule.Range(0, 59, 1); // for muted testing
+rule.minute = new schedule.Range(0, 59, +r_rate); 
+console.log(rule.minute);
 const extractor = require('./twitter.js');
 const twitterSearches = ['#idleg #idpol', '#idpol -#idleg', '#idleg -#idpol'];
-const twitterJob = schedule.scheduleJob(rule, function() {
+const botJob = schedule.scheduleJob(rule, function() {
+	console.log("REFRESH");
 	const lookback = new Date() - (delay_time);
 	for(k in feeds) {
 		parse(feeds[k], lookback);
