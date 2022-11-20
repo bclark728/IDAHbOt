@@ -1,5 +1,6 @@
 const RSSParser = require("rss-parser");
 const toot = require('./mastodon.js');
+const newsFilter = '_IDAHbOt_news';
 const parse = async (feed, lookback) => {
         const parsed = await new RSSParser().parseURL(feed.url);
         parsed.items.forEach(item => {
