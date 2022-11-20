@@ -14,6 +14,6 @@ Tweets from #idpol and #idleg | \_IDAHbOt\_twitter
 
 -sim:	          simulate, do not actually send toots
 
--r <minutes>:     set refresh rate. defaults to 15 minutes
+-r \<minutes\>:     set refresh rate. defaults to 15 minutes
 
--l <minutes>:     set lookback windown. defaults to refresh rate. *warning: if lookback window is smaller than refresh rate, this will result in duplucate toots. this option should only be used for testing with -sim*
+-l \<minutes\>:     set lookback windown. defaults to refresh rate. *warning: if lookback window is smaller than refresh rate, this will result in duplucate toots. this option should only be used for testing with -sim*
