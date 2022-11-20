@@ -1,6 +1,15 @@
+///
+// rss.js - module to find rss feed updates
+// 	copyright bryan clark (bryan.allan.clark@gmail.com) 2022
+///
+
+
 const RSSParser = require("rss-parser");
 const toot = require('./mastodon.js');
 const newsFilter = '_IDAHbOt_news';
+
+// main function for parsing an rss feed. takes a News Feed object to define the feed
+// and a prior date cutoff for new feeds. exits when it exceeds lookback windwo 
 const parse = async (feed, lookback) => {
         const parsed = await new RSSParser().parseURL(feed.url);
         parsed.items.forEach(item => {
@@ -23,6 +32,7 @@ const parse = async (feed, lookback) => {
         });
 };
 
+// define NewsFeed object type
 function NewsFeed(name, url, urlExcludes=[], titleExcludes=[]) {
         this.name = name;
         this.url = url;

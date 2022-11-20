@@ -1,8 +1,15 @@
+///
+// mastodon.js - module for interfacing with mastodon
+// 	copyright bryan clark (bryan.allan.clark@gmail.com) 2022
+///
+
+//read secret tokens from tokens.json file
 const fs = require('fs');
 const file_name = "tokens.json";
 let rawdata = fs.readFileSync(file_name);
 let tokens = JSON.parse(rawdata);
 
+//create client
 const Mastodon = require('mastodon-api');
 const M = new Mastodon({
   client_key: tokens.client_key,
@@ -12,7 +19,8 @@ const M = new Mastodon({
   api_url: 'https://botsin.space/api/v1/'
 });
 
-function toot(message, spoiler='bot jibberish') {
+//main function to send toots
+function toot(message, spoiler) {
         if(process.argv.includes("-sim")) {
                 console.log(`[${spoiler}]\n`+
                             `${message}\n`);
