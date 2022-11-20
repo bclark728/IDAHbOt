@@ -42,8 +42,7 @@ const feeds = [ new NewsFeed("Idaho Statesman", "https://feeds.mcclatchy.com/ida
               ]; // TODO: Ed News, CDA Press, Bonner bee, east idaho news
 
 const schedule = require('node-schedule');
-const delay_time = 1000*60*l_time; // 15 minute refresh cycle
-//const delay_time = 1000*60*120; // for muted testing
+const delay_time = 1000*60*l_time; 
 var rule = new schedule.RecurrenceRule();
 rule.minute = new schedule.Range(0, 59, +r_rate); 
 console.log(rule.minute);
