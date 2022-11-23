@@ -16,4 +16,4 @@ Tweets from #idpol and #idleg | \_IDAHbOt\_twitter
 
 -r \<minutes\>:     set refresh rate. defaults to 15 minutes
 
--l \<minutes\>:     set lookback windown. defaults to refresh rate. *warning: if lookback window is smaller than refresh rate, this will result in duplucate toots. this option should only be used for testing with -sim*
+-l \<minutes\>:     set lookback window. defaults to refresh rate. *warning: if lookback window is larger than refresh rate, this will result in duplucate toots. this option should only be used for testing with -sim*
